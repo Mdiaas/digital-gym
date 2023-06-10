@@ -8,6 +8,7 @@ import (
 	"github.com/mdiaas/goapi/internal/entity"
 	"github.com/mdiaas/goapi/internal/infra/database"
 	"github.com/mdiaas/goapi/internal/infra/webserver/handlers"
+	"github.com/mdiaas/goapi/internal/usecases"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,10 @@ func main() {
 	}
 	db.AutoMigrate(&entity.GymClass{}, &entity.User{})
 	gymClassDB := database.NewGymClass(db)
-	gymClassHandler := handlers.NewGymClassHandler(gymClassDB)
+	createGymClassUC := usecases.NewCreateGymClassUC(gymClassDB)
+	getGymClassUC := usecases.NewGetGymClassUC(gymClassDB)
+	updateGymClassUC := usecases.NewUpdateGymClassUC(gymClassDB)
+	gymClassHandler := handlers.NewGymClassHandler(createGymClassUC, getGymClassUC, updateGymClassUC)
 	r := chi.NewRouter()
 	r.Post("/gymclass", gymClassHandler.CreateGymClass)
 	r.Get("/gymclass/{id}", gymClassHandler.GetGymClass)

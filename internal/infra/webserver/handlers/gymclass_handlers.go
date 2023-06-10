@@ -6,67 +6,60 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mdiaas/goapi/internal/dto"
-	"github.com/mdiaas/goapi/internal/entity"
-	"github.com/mdiaas/goapi/internal/infra/database"
-	entityPkg "github.com/mdiaas/goapi/pkg/entity"
+	"github.com/mdiaas/goapi/internal/usecases"
 )
 
 type GymClassHandler struct {
-	GymClassDB database.GymClassDatabaseInterface
+	CreateGymClassUC usecases.CreateGymClassUCInterface
+	GetGymClassUC    usecases.GetGymClassUCInterface
+	UpdateGymClassUC usecases.UpdateGymClassUCInterface
 }
 
-func NewGymClassHandler(db database.GymClassDatabaseInterface) *GymClassHandler {
+func NewGymClassHandler(createGymClassUC usecases.CreateGymClassUCInterface, getGymClassUC usecases.GetGymClassUCInterface, updateGymClassUC usecases.UpdateGymClassUCInterface) *GymClassHandler {
 	return &GymClassHandler{
-		GymClassDB: db,
+		CreateGymClassUC: createGymClassUC,
+		GetGymClassUC:    getGymClassUC,
+		UpdateGymClassUC: updateGymClassUC,
 	}
 }
 
 func (h *GymClassHandler) CreateGymClass(w http.ResponseWriter, r *http.Request) {
-	var gymClass dto.CreateGymClassInput
+	var gymClass *dto.CreateGymClassInput
 	err := json.NewDecoder(r.Body).Decode(&gymClass)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	g, err := entity.NewGymClass(gymClass.Name, gymClass.Link)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	err = h.GymClassDB.Create(g)
+	err = h.CreateGymClassUC.Execute(gymClass)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 	w.WriteHeader(http.StatusCreated)
 }
+
 func (h *GymClassHandler) GetGymClass(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	gymClass, err := h.GymClassDB.FindByID(id)
+	gymClass, err := h.GetGymClassUC.Execute(id)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(gymClass)
 }
+
 func (h *GymClassHandler) UpdateGymClass(w http.ResponseWriter, r *http.Request) {
-	var gymClass entity.GymClass
+
 	id := chi.URLParam(r, "id")
-	_, err := h.GymClassDB.FindByID(id)
+	_, err := h.GetGymClassUC.Execute(id)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 	}
-	err = json.NewDecoder(r.Body).Decode(&gymClass)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-	gymClass.ID, err = entityPkg.ParseID(id)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-	err = h.GymClassDB.Update(&gymClass)
+	gymClass, err := h.UpdateGymClassUC.Execute(id, r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(gymClass)
 }

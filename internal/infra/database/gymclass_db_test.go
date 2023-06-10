@@ -24,7 +24,7 @@ func TestCreateNewGymClass(t *testing.T) {
 	assert.NotEmpty(t, gymClass.ID)
 }
 
-func TestFindAllProducts(t *testing.T) {
+func TestFindAllGymClasses(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	if err != nil {
 		t.Error(err)
