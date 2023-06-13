@@ -12,3 +12,11 @@ type UpdateGymClassInput struct {
 	Name string    `json:"name"`
 	Link string    `json:"link"`
 }
+
+type CreateUserInput struct {
+	FullName string `json:"fullname"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	CPF      string `json:"cpf"`
+	IsAdmin  bool   `json:"is_admin"`
+}

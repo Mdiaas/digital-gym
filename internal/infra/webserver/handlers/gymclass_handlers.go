@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mdiaas/goapi/internal/dto"
@@ -10,16 +11,20 @@ import (
 )
 
 type GymClassHandler struct {
-	CreateGymClassUC usecases.CreateGymClassUCInterface
-	GetGymClassUC    usecases.GetGymClassUCInterface
-	UpdateGymClassUC usecases.UpdateGymClassUCInterface
+	CreateGymClassUC    usecases.CreateGymClassUCInterface
+	GetGymClassUC       usecases.GetGymClassUCInterface
+	UpdateGymClassUC    usecases.UpdateGymClassUCInterface
+	DeleteGymClassUC    usecases.DeleteGymClassUCInterface
+	FindAllGymClassesUC usecases.FindAllGymClassesUCInterface
 }
 
-func NewGymClassHandler(createGymClassUC usecases.CreateGymClassUCInterface, getGymClassUC usecases.GetGymClassUCInterface, updateGymClassUC usecases.UpdateGymClassUCInterface) *GymClassHandler {
+func NewGymClassHandler(createGymClassUC usecases.CreateGymClassUCInterface, getGymClassUC usecases.GetGymClassUCInterface, updateGymClassUC usecases.UpdateGymClassUCInterface, deleteGymClassUC usecases.DeleteGymClassUCInterface, findAllGymClassesUC usecases.FindAllGymClassesUCInterface) *GymClassHandler {
 	return &GymClassHandler{
-		CreateGymClassUC: createGymClassUC,
-		GetGymClassUC:    getGymClassUC,
-		UpdateGymClassUC: updateGymClassUC,
+		CreateGymClassUC:    createGymClassUC,
+		GetGymClassUC:       getGymClassUC,
+		UpdateGymClassUC:    updateGymClassUC,
+		DeleteGymClassUC:    deleteGymClassUC,
+		FindAllGymClassesUC: findAllGymClassesUC,
 	}
 }
 
@@ -62,4 +67,49 @@ func (h *GymClassHandler) UpdateGymClass(w http.ResponseWriter, r *http.Request)
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(gymClass)
+}
+
+func (h *GymClassHandler) DeleteGymClass(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	gymClass, err := h.GetGymClassUC.Execute(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	err = h.DeleteGymClassUC.Execute(gymClass)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+func (h *GymClassHandler) FindAllGymClasses(w http.ResponseWriter, r *http.Request) {
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		w.WriteHeader(http.StatusPreconditionFailed)
+		return
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		w.WriteHeader(http.StatusPreconditionFailed)
+		return
+	}
+	sort := r.URL.Query().Get("sort")
+	if sort != "desc" {
+		sort = "asc"
+	}
+
+	gymClasses, err := h.FindAllGymClassesUC.Execute(pageInt, limitInt, sort)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(gymClasses)
 }

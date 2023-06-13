@@ -24,14 +24,24 @@ func main() {
 	}
 	db.AutoMigrate(&entity.GymClass{}, &entity.User{})
 	gymClassDB := database.NewGymClass(db)
+	userDB := database.NewUser(db)
 	createGymClassUC := usecases.NewCreateGymClassUC(gymClassDB)
 	getGymClassUC := usecases.NewGetGymClassUC(gymClassDB)
 	updateGymClassUC := usecases.NewUpdateGymClassUC(gymClassDB)
-	gymClassHandler := handlers.NewGymClassHandler(createGymClassUC, getGymClassUC, updateGymClassUC)
+	deleteGymClassUC := usecases.NewDeleteGymClassUC(gymClassDB)
+	findAllGymClassesUC := usecases.NewFindAllGymClassesUC(gymClassDB)
+	gymClassHandler := handlers.NewGymClassHandler(createGymClassUC, getGymClassUC, updateGymClassUC, deleteGymClassUC, findAllGymClassesUC)
+
+	createUserUC := usecases.NewCreateUserUC(userDB)
+	userHandler := handlers.NewUserHandler(createUserUC)
 	r := chi.NewRouter()
 	r.Post("/gymclass", gymClassHandler.CreateGymClass)
+	r.Get("/gymclass", gymClassHandler.FindAllGymClasses)
 	r.Get("/gymclass/{id}", gymClassHandler.GetGymClass)
 	r.Put("/gymclass/{id}", gymClassHandler.UpdateGymClass)
+	r.Delete("/gymclass/{id}", gymClassHandler.DeleteGymClass)
+
+	r.Post("/user", userHandler.CreateUser)
 	http.ListenAndServe(":8080", r)
 
 }
