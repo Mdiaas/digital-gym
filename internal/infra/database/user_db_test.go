@@ -52,3 +52,22 @@ func TestFindByID(t *testing.T) {
 	assert.Equal(t, user.CPF, userFound.CPF)
 	assert.Equal(t, user.IsAdmin, userFound.IsAdmin)
 }
+func TestFindByEmail(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+	db.AutoMigrate(&entity.User{})
+	user, _ := entity.NewUser("Mateus Dias", "maugusto.diaas@gmail.com", "123456", "37386390041", true)
+	userDB := NewUser(db)
+	err = userDB.Create(user)
+	assert.Nil(t, err)
+
+	userFound, err := userDB.FindByEmail(user.Email)
+	assert.Nil(t, err)
+	assert.Equal(t, user.ID, userFound.ID)
+	assert.Equal(t, user.FullName, userFound.FullName)
+	assert.Equal(t, user.Email, userFound.Email)
+	assert.Equal(t, user.CPF, userFound.CPF)
+	assert.Equal(t, user.IsAdmin, userFound.IsAdmin)
+}

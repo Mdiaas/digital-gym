@@ -33,7 +33,9 @@ func main() {
 	gymClassHandler := handlers.NewGymClassHandler(createGymClassUC, getGymClassUC, updateGymClassUC, deleteGymClassUC, findAllGymClassesUC)
 
 	createUserUC := usecases.NewCreateUserUC(userDB)
-	userHandler := handlers.NewUserHandler(createUserUC)
+	loginUserUC := usecases.NewGetJwtUC(userDB)
+	userHandler := handlers.NewUserHandler(createUserUC, loginUserUC)
+
 	r := chi.NewRouter()
 	r.Post("/gymclass", gymClassHandler.CreateGymClass)
 	r.Get("/gymclass", gymClassHandler.FindAllGymClasses)
@@ -42,6 +44,7 @@ func main() {
 	r.Delete("/gymclass/{id}", gymClassHandler.DeleteGymClass)
 
 	r.Post("/user", userHandler.CreateUser)
+	r.Post("/user/login", userHandler.GetJWT)
 	http.ListenAndServe(":8080", r)
 
 }

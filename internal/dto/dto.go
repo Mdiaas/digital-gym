@@ -20,3 +20,7 @@ type CreateUserInput struct {
 	CPF      string `json:"cpf"`
 	IsAdmin  bool   `json:"is_admin"`
 }
+type GetJWTUserInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}

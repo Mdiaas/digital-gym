@@ -25,3 +25,6 @@ type FindAllGymClassesUCInterface interface {
 type CreateUserUCInterface interface {
 	Execute(user *dto.CreateUserInput) error
 }
+type LoginUserUCInterface interface {
+	Execute(userDto dto.GetJWTUserInput) (*entity.User, error)
+}
