@@ -29,6 +29,7 @@ func NewGymClassHandler(createGymClassUC usecases.CreateGymClassUCInterface, get
 }
 
 func (h *GymClassHandler) CreateGymClass(w http.ResponseWriter, r *http.Request) {
+
 	var gymClass *dto.CreateGymClassInput
 	err := json.NewDecoder(r.Body).Decode(&gymClass)
 	if err != nil {

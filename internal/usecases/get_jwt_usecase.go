@@ -8,23 +8,23 @@ import (
 	"github.com/mdiaas/goapi/internal/infra/database"
 )
 
-type GetJwtUC struct {
+type LoginUC struct {
 	UserDB database.UserDatabaseInterface
 }
 
-func NewGetJwtUC(db database.UserDatabaseInterface) *GetJwtUC {
-	return &GetJwtUC{
+func NewLoginUC(db database.UserDatabaseInterface) *LoginUC {
+	return &LoginUC{
 		UserDB: db,
 	}
 }
 
-func (c *GetJwtUC) Execute(userDto dto.GetJWTUserInput) (*entity.User, error) {
+func (c *LoginUC) Execute(userDto *dto.GetJWTUserInput) (*entity.User, error) {
 	u, err := c.UserDB.FindByEmail(userDto.Email)
 	if err != nil {
 		return nil, err
 	}
-	if u.ValidatePassword(userDto.Password) {
+	if !u.ValidatePassword(userDto.Password) {
 		return nil, errors.New("invalid password")
 	}
-	return u, nil
+	return u, err
 }

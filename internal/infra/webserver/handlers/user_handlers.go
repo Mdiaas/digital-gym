@@ -13,9 +13,6 @@ import (
 type UserHandler struct {
 	CreateUserUC usecases.CreateUserUCInterface
 	LoginUserUC  usecases.LoginUserUCInterface
-	GetJwtUC     usecases.GetJwtUC
-	Jwt          *jwtauth.JWTAuth
-	JwtExpiresIn int
 }
 
 func NewUserHandler(createUserUC usecases.CreateUserUCInterface, loginUserUC usecases.LoginUserUCInterface) *UserHandler {
@@ -41,22 +38,23 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
-	var userDto dto.GetJWTUserInput
+	jwt := r.Context().Value("jwt").(*jwtauth.JWTAuth)
+	expiresIn := r.Context().Value("expiresIn").(int)
+	var userDto *dto.GetJWTUserInput
 	err := json.NewDecoder(r.Body).Decode(&userDto)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	user, err := h.GetJwtUC.Execute(userDto)
+	user, err := h.LoginUserUC.Execute(userDto)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	_, token, err := h.Jwt.Encode(map[string]interface{}{
-		"sub":     user.ID.String(),
-		"expires": time.Now().Add(time.Second * time.Duration(h.JwtExpiresIn)).Unix(),
-		"admin":   user.IsAdmin,
+	_, token, err := jwt.Encode(map[string]interface{}{
+		"sub":   user.ID.String(),
+		"exp":   time.Now().Add(time.Second * time.Duration(expiresIn)).Unix(),
+		"admin": user.IsAdmin,
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
