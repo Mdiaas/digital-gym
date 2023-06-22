@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -12,7 +13,7 @@ import (
 	"github.com/mdiaas/goapi/internal/infra/webserver/handlers"
 	"github.com/mdiaas/goapi/internal/infra/webserver/middlewares"
 	"github.com/mdiaas/goapi/internal/usecases"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +22,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", configs.DBHost, configs.DBUser, configs.DBPassword, configs.DBName, configs.DBPort)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
