@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	configs, err := configs.LoadConfig("/etc/secrets")
+	configs, err := configs.LoadConfig(".")
 	if err != nil {
 		panic(err)
 	}
