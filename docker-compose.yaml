@@ -4,6 +4,8 @@ services:
   app:
     container_name: app
     build: .
+    environment:
+      - LOAD_ENV_FILE=true
     ports:
       - 8080:8080
     volumes:
