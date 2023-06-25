@@ -60,12 +60,7 @@ func main() {
 			r.Delete("/{id}", gymClassHandler.DeleteGymClass)
 		})
 	})
-	r.Route("/user", func(r chi.Router) {
-		r.Use(jwtauth.Verifier(configs.TokenAuth))
-		r.Use(jwtauth.Authenticator)
-		r.Use(middlewares.IsAdminMiddleware)
-		r.Post("/", userHandler.CreateUser)
-	})
+	r.Post("/user", userHandler.CreateUser)
 	r.Post("/user/login", userHandler.GetJWT)
 	http.ListenAndServe(":8080", r)
 }
