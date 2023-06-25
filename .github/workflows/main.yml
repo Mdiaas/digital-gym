@@ -21,6 +21,7 @@ jobs:
       - name: Run tests
         run: go test -race -vet=off ./...
   build:
+    needs: audit
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to production
