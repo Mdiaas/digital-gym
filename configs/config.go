@@ -1,8 +1,9 @@
 package configs
 
 import (
+	"os"
+
 	"github.com/go-chi/jwtauth"
-	"github.com/spf13/viper"
 )
 
 type conf struct {
@@ -19,21 +20,16 @@ type conf struct {
 }
 
 func LoadConfig(path string) (*conf, error) {
-	var cfg *conf
-	viper.SetConfigName("app_config")
-	viper.SetConfigType("env")
-	viper.AddConfigPath(path)
-	viper.SetConfigFile(".env")
-
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
-	err = viper.Unmarshal(&cfg)
-	if err != nil {
-		panic(err)
-	}
+	var cfg conf
+	cfg.DBDriver = os.Getenv("DB_DRIVER")
+	cfg.DBHost = os.Getenv("DB_HOST")
+	cfg.DBPort = os.Getenv("DB_PORT")
+	cfg.DBUser = os.Getenv("DB_USER")
+	cfg.DBPassword = os.Getenv("DB_PASSWORD")
+	cfg.DBName = os.Getenv("DB_NAME")
+	cfg.WebServerPort = os.Getenv("WEB_SERVER_PORT")
+	cfg.JWTSecret = os.Getenv("JWT_SECRET")
+	cfg.JWTExpiresIn = 300
 	cfg.TokenAuth = jwtauth.New("HS256", []byte(cfg.JWTSecret), nil)
-	return cfg, err
+	return &cfg, nil
 }
